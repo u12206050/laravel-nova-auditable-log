@@ -1,6 +1,6 @@
 <?php
 
-namespace Devpartners\AuditableLog\Http\Controllers;
+namespace Day4\AuditableLog\Http\Controllers;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
@@ -18,8 +18,9 @@ class AuditController
 
         abort_if($request->user()->cant('audit', $record), 403, 'Unable to retrieve audits');
 
-        $audits = $record->audits()
-            ->with('user')
+        $audits = $this->loadTranslationAudits($record, $record->audits());
+
+        $audits = $audits->with('user:id,name')
             ->orderBy('created_at', 'desc')
             ->paginate();
 
@@ -36,9 +37,46 @@ class AuditController
     {
         $model = Nova::modelInstanceForKey($resourceName);
 
-        return in_array('Illuminate\Database\Eloquent\SoftDeletes', class_uses($model))
-            ? $model::withTrashed()->find($resourceId)
-            : $model->find($resourceId);
+        $uses = class_uses($model);
+
+        if (in_array('Illuminate\Database\Eloquent\SoftDeletes', $uses)) {
+            $model = $model::withTrashed();
+
+            if (in_array('Astrotomic\Translatable\Translatable', $uses)) {
+                $model = $model->with('translations');
+            }
+        } else if (in_array('Astrotomic\Translatable\Translatable', $uses)) {
+            $model = $model::with('translations');
+        }
+
+        return $model->find($resourceId);
+    }
+
+    protected function loadTranslationAudits($record, $audits) {
+        $locale = app()->getLocale();
+        try {
+            if ($record->hasTranslation($locale)) {
+                $t = $record->translate($locale);
+                $audits = $audits->orWhere(function($query) use ($t) {
+                    $query->where('auditable_id', $t->id)
+                        ->where('auditable_type', get_class($t));
+                });
+            }
+        } catch (\Exception $e) {
+            // ignore $e;
+        }
+        return $audits;
+    }
+
+    public function delete(Request $request, $resourceName, $resourceId, $auditId)
+    {
+        $record = $this->loadRecord($resourceName, $resourceId);
+        abort_if($request->user()->cant('audit_restore', $record), 403, 'Unable to restore audits');
+
+        $audit = Audit::findOrFail($auditId);
+        $audit->delete();
+
+        return response()->json(['status' => 'OK']);
     }
 
     public function restore(Request $request, $resourceName, $resourceId, $auditId)
@@ -46,16 +84,11 @@ class AuditController
         $record = $this->loadRecord($resourceName, $resourceId);
         abort_if($request->user()->cant('audit_restore', $record), 403, 'Unable to restore audits');
 
-        /**
-         * @var $auditor Audit
-         * @var $audit   Audit
-         */
-        $auditableClass = Config::get('audit.implementation', Audit::class);
-        $auditor = new $auditableClass;
+        $audit = Audit::findOrFail($auditId);
 
-        $audit = $record->audits()->where($auditor->getTable() . '.' . $auditor->getKeyName(), $auditId)->firstOrFail();
+        $restore = Arr::only($audit->old_values, $request->input('restore', []));
 
-        $record->fill(Arr::only($audit->new_values, $request->input('restore', [])));
+        $record->fill($restore);
         $record->save();
 
         return response()->json(['status' => 'OK', 'record' => $record]);

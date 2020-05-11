@@ -1,6 +1,6 @@
 <?php
 
-namespace Devpartners\AuditableLog;
+namespace Day4\AuditableLog;
 
 use Illuminate\Support\Facades\Gate;
 use Laravel\Nova\Nova;
@@ -29,7 +29,6 @@ class ToolServiceProvider extends ServiceProvider
 
         Nova::serving(function (ServingNova $event) {
             Nova::script('auditable-log', __DIR__ . '/../dist/js/tool.js');
-            Nova::style('auditable-log', __DIR__ . '/../dist/css/tool.css');
 
             Nova::translations([
                 'Audit Log'      => __('Audit Log'),

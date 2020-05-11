@@ -8,7 +8,7 @@ Simply install using composer.
 
 ```bash
 
-composer require devpartners/auditable-log
+composer require day4/auditable-log
 
 ```
 
@@ -16,13 +16,13 @@ Then add the resource tool to a resource whose related model uses and implements
 
 ```php
 
-public function fields(Request $request) 
+public function fields(Request $request)
 {
 
   return [
     Text::make('Name'),
     Text::make('E-mail'),
-    
+
     // Shows audit log button on detail view, which expands audit trail
     AuditableLog::make()
   ];
@@ -33,7 +33,7 @@ public function fields(Request $request)
 
 ## Policies
 
-There are two policy gates available that you can implement on your resources' policy. 
+There are two policy gates available that you can implement on your resources' policy.
 
 
 ```php

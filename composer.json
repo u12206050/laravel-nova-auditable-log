@@ -1,5 +1,5 @@
 {
-    "name": "devpartners/auditable-log",
+    "name": "day4/auditable-log",
     "description": "A Laravel Nova resource tool for displaying the Laravel Auditing audit log.",
     "keywords": [
         "laravel",
@@ -11,13 +11,13 @@
     },
     "autoload": {
         "psr-4": {
-            "Devpartners\\AuditableLog\\": "src/"
+            "Day4\\AuditableLog\\": "src/"
         }
     },
     "extra": {
         "laravel": {
             "providers": [
-                "Devpartners\\AuditableLog\\ToolServiceProvider"
+                "Day4\\AuditableLog\\ToolServiceProvider"
             ]
         }
     },

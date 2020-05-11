@@ -2,16 +2,15 @@ export const normaliseFields = fields =>
 {
     let indexedFields = {};
 
-    fields.filter(field => field.attribute !== "")
-        .forEach(field => {
-            if (field.attribute !== "") {
-                const {attribute, value, name} = field;
-                indexedFields[attribute] = {
-                    value,
-                    label: name
-                };
-            }
-        });
+    fields.forEach(field => {
+        if (field.attribute && field.attribute !== "") {
+            const {attribute, value, name} = field;
+            indexedFields[attribute] = {
+                value,
+                label: name
+            };
+        }
+    });
 
     // Support nova dependency container
     if (indexedFields.length !== fields.length) {

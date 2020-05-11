@@ -1,6 +1,6 @@
 <?php
 
-namespace Devpartners\AuditableLog;
+namespace Day4\AuditableLog;
 
 use Laravel\Nova\Http\Requests\NovaRequest;
 use Laravel\Nova\ResourceTool;

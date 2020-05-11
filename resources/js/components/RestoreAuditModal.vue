@@ -2,7 +2,6 @@
     <modal @modal-close="handleClose">
         <form
             @submit.prevent="handleConfirm"
-            slot-scope="props"
             class="bg-white rounded-lg shadow-lg overflow-hidden"
             style="width: 750px"
         >
@@ -30,7 +29,7 @@
                         </th>
                         </thead>
                         <tbody>
-                        <tr v-for="compare in comparison">
+                        <tr v-for="compare in comparison" :key="compare.key">
                             <td style="max-width: 20px;" class="text-center">
                                 <input type="checkbox" class="checkbox" v-model="restoreIds" :value="compare.key" />
                             </td>
@@ -132,13 +131,13 @@
             comparison() {
                 return Object.keys(this.audit.new_values).map(key => {
                     if (typeof this.fields[key] == 'undefined') return null;
-                    if(this.fields[key].value == this.audit.new_values[key]) return null;
+                    if(this.fields[key].value == this.audit.old_values[key]) return null;
 
                     return  {
                         key,
                         label: this.fields[key].label,
                         current: this.fields[key].value,
-                        restore: this.audit.new_values[key]
+                        restore: this.audit.old_values[key]
                     }
                 }).filter(field => field !== null)
             }
